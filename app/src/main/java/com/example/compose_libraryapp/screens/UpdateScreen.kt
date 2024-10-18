@@ -9,6 +9,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.example.compose_libraryapp.room.BookEntity
 import com.example.compose_libraryapp.viewmodel.BookViewModel
 
 @Composable
@@ -23,8 +24,12 @@ fun UpdateScreen(viewModel: BookViewModel, bookId: String?) {
             label = { Text(text = "Update Book Name") },
             placeholder = { Text(text = "New Book Name") }
         )
-        Button(onClick = {  }) {
-            
+        Button(onClick = {
+            var newBook = BookEntity(bookId!!.toInt(),inputBook)
+           viewModel.updateBook(newBook)
+
+        }) {
+            Text(text = "Update Book")
         }
     }
 }

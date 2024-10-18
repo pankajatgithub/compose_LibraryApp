@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
@@ -35,9 +36,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.example.compose_libraryapp.repository.Repository
 import com.example.compose_libraryapp.room.BookEntity
 import com.example.compose_libraryapp.room.BooksDB
+import com.example.compose_libraryapp.screens.UpdateScreen
 import com.example.compose_libraryapp.ui.theme.Compose_LibraryAppTheme
 import com.example.compose_libraryapp.viewmodel.BookViewModel
 
@@ -60,7 +67,19 @@ class MainActivity : ComponentActivity() {
                     val db = BooksDB.getInstance(mContext)
                     val repository = Repository(db)
                     val myViewMddel = BookViewModel(repository = repository)
-                    MainScreen(myViewMddel)
+                    //navigation - install navigation dependency
+                    val navController = rememberNavController()
+                    NavHost(navController = navController, startDestination = "MainScreen") {
+                        composable("MainScreen") {
+                            MainScreen(viewModel = myViewMddel, navController = navController)
+                        }
+                        composable("UpdateScreen/{bookId}"){
+                            UpdateScreen(viewModel = myViewMddel,
+                                bookId =it.arguments?.getString("bookId") )// it refers here navbackstack entry
+
+                        }
+                    }
+//                    MainScreen(myViewMddel)
                 }
             }
         }
@@ -68,12 +87,15 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun MainScreen(viewModel: BookViewModel) {
+fun MainScreen(viewModel: BookViewModel, navController: NavHostController) {
     var inputBook by remember {
         mutableStateOf("")
     }
 
-    Column (horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(vertical = 30.dp, horizontal = 10.dp)){
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.padding(vertical = 30.dp, horizontal = 10.dp)
+    ) {
         OutlinedTextField(value = inputBook,
             onValueChange = { enterdText ->
                 inputBook = enterdText
@@ -89,13 +111,13 @@ fun MainScreen(viewModel: BookViewModel) {
             Text(text = "Insert Book into DB")
         }
         //The Book List
-        BooksList(viewModel = viewModel)
+        BooksList(viewModel = viewModel,navController)
     }
 
 }
 
 @Composable
-fun BookCard(viewModel: BookViewModel, book: BookEntity) {
+fun BookCard(viewModel: BookViewModel, book: BookEntity, navController: NavHostController) {
     Card(
         modifier = Modifier
             .padding(8.dp)
@@ -107,22 +129,29 @@ fun BookCard(viewModel: BookViewModel, book: BookEntity) {
                 modifier = Modifier.padding(start = 4.dp, end = 4.dp)
             )
             Text(text = book.title, fontSize = 24.sp)
-            
-            IconButton(onClick = {viewModel.deleteBook(book = book) }) {
-           Icon(imageVector = Icons.Default.Delete, contentDescription ="Delete" )
+
+            IconButton(onClick = { viewModel.deleteBook(book = book) }) {
+                Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete")
 
             }
+            IconButton(onClick = {
+                navController.navigate("UpdateScreen/${book.id}")
+            }) {
+                Icon(imageVector = Icons.Default.Edit,
+                    contentDescription = "Edit")
+            }
+
         }
     }
 }
 
 @Composable
-fun BooksList(viewModel: BookViewModel) {
+fun BooksList(viewModel: BookViewModel, navController: NavHostController) {
     //whenever response is a flow, it will be collected as state , it will convert flow into state and give list inside the flow
     val books by viewModel.books.collectAsState(initial = emptyList())
     LazyColumn() {
         items(items = books) { item ->
-            BookCard(viewModel = viewModel, book = item)
+            BookCard(viewModel = viewModel, book = item,navController)
         }
     }
 
