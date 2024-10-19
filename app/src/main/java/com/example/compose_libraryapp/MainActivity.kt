@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,6 +16,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -31,6 +34,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
@@ -94,8 +98,10 @@ fun MainScreen(viewModel: BookViewModel, navController: NavHostController) {
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.padding(vertical = 30.dp, horizontal = 10.dp)
+        modifier = Modifier.padding(top= 22.dp, start = 6.dp, end = 6.dp)
     ) {
+        Text(text = "Insert Books in Room DB", fontSize = 22.sp)
+        
         OutlinedTextField(value = inputBook,
             onValueChange = { enterdText ->
                 inputBook = enterdText
@@ -107,7 +113,7 @@ fun MainScreen(viewModel: BookViewModel, navController: NavHostController) {
         Button(onClick = {
             //id will autogenerate even we send 0, it will not be considered
             viewModel.addBook(BookEntity(0, inputBook))
-        }) {
+        }, colors = ButtonDefaults.buttonColors(Color.Blue)) {
             Text(text = "Insert Book into DB")
         }
         //The Book List
@@ -123,12 +129,16 @@ fun BookCard(viewModel: BookViewModel, book: BookEntity, navController: NavHostC
             .padding(8.dp)
             .fillMaxWidth()
     ) {
-        Row {
+        Row (verticalAlignment = Alignment.CenterVertically,){
             Text(
                 text = "" + book.id, fontSize = 24.sp,
                 modifier = Modifier.padding(start = 4.dp, end = 4.dp)
             )
             Text(text = book.title, fontSize = 24.sp)
+
+            Row (horizontalArrangement = Arrangement.End){
+
+
 
             IconButton(onClick = { viewModel.deleteBook(book = book) }) {
                 Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete")
@@ -140,7 +150,7 @@ fun BookCard(viewModel: BookViewModel, book: BookEntity, navController: NavHostC
                 Icon(imageVector = Icons.Default.Edit,
                     contentDescription = "Edit")
             }
-
+            }
         }
     }
 }
@@ -149,10 +159,14 @@ fun BookCard(viewModel: BookViewModel, book: BookEntity, navController: NavHostC
 fun BooksList(viewModel: BookViewModel, navController: NavHostController) {
     //whenever response is a flow, it will be collected as state , it will convert flow into state and give list inside the flow
     val books by viewModel.books.collectAsState(initial = emptyList())
+   
+   Column (Modifier.padding(16.dp)){
+       Text(text = "My Library" , fontSize = 24.sp, color = Color.Red)
+  
     LazyColumn() {
         items(items = books) { item ->
             BookCard(viewModel = viewModel, book = item,navController)
         }
     }
-
+   }
 }
