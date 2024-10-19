@@ -13,7 +13,9 @@ interface BookDAO {
     @Insert
     suspend fun addBook(bookEntity: BookEntity)
 
-    @Query("SELECT * FROM BookEntity")
+//    @Query("SELECT * FROM BookEntity WHERE title LIKE 'P%'") //ALL TITLE STARTING WITH P
+
+    @Query("SELECT * FROM BookEntity ORDER BY id DESC")
     fun getAllBooks(): Flow<List<BookEntity>>
 
     @Delete
